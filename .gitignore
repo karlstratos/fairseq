@@ -1,3 +1,6 @@
+examples/language_model/wikitext-103-v1.zip
+examples/language_model/wikitext-103
+
 # JetBrains PyCharm IDE
 .idea/
 
