@@ -108,6 +108,9 @@ class CommonConfig(FairseqDataclass):
             "help": "log progress every N batches (when progress bar is disabled)"
         },
     )
+    dict_file: Optional[str] = field(
+        default=None, metadata={"help": "print dict/vocab here"}
+    )
     log_format: Optional[LOG_FORMAT_CHOICES] = field(
         default=None, metadata={"help": "log format to use"}
     )

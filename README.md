@@ -35,7 +35,6 @@ fairseq-eval-lm data-bin/wikitext-103 --path /data/jl2529/fairseq/wikitext-103/c
 
 # Debugging
 
-TODO: disable train shuffle
 ```
-fairseq-train --task language_modeling data-bin/wikitext-103-toy --save-dir /tmp/fairseq-lm-toy --arch transformer_lm --share-decoder-input-output-embed --dropout 0.1 --optimizer adam --adam-betas '(0.9, 0.98)' --weight-decay 0.01  --lr 0.0005 --tokens-per-sample 10 --max-tokens 30 --max-update 10 --decoder-input-dim 4 --decoder-embed-dim 4 --decoder-output-dim 4 --decoder-ffn-embed-dim 6 --decoder-layers 1 --decoder-attention-heads 2 --log-format simple --log-interval 1 --no-save --num-workers 0
+fairseq-train --task language_modeling data-bin/wikitext-103-toy --save-dir /tmp/fairseq-lm-toy --arch transformer_lm --share-decoder-input-output-embed --dropout 0.1 --optimizer adam --adam-betas '(0.9, 0.98)' --weight-decay 0.01  --lr 0.0005 --tokens-per-sample 10 --max-tokens 30 --max-update 10 --decoder-input-dim 4 --decoder-embed-dim 4 --decoder-output-dim 4 --decoder-ffn-embed-dim 6 --decoder-layers 1 --decoder-attention-heads 2 --log-format simple --log-interval 1 --no-save --num-workers 0 --dict-file /tmp/vocab.txt
 ```

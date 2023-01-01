@@ -323,11 +323,15 @@ def train(
     trainer.begin_epoch(epoch_itr.epoch)
 
     def print_dict(task):
-        with open('/Users/stratos/work/repositories/lm/data/debug/vocab.txt', 'w') as f:
-            for i in range(len(task.dictionary)):
-                print(f'{i}:{task.dictionary.symbols[i]}', end=' ')
-                f.write(f'{i}\t{task.dictionary.symbols[i]}\n')
-        print(f'\n{len(task.dictionary)} items')
+        string = '\n'.join([f'{i}\t{task.dictionary.symbols[i]}'
+                            for i in range(len(task.dictionary))]) + '\n'
+        print(string)
+        print(f'{len(task.dictionary)} items')
+
+        if cfg.common.dict_file is not None:
+            with open(cfg.common.dict_file, 'w') as f:
+                f.write(string)
+
     #print_dict(task)
     #exit()
 
