@@ -297,9 +297,14 @@ class TransformerLanguageModel(FairseqLanguageModel):
                 args.quant_noise_pq_block_size,
             )
         else:
+            #import torch
+            #torch.manual_seed(42)
             embed_tokens = cls.build_embedding(
                 args, task.source_dictionary, args.decoder_input_dim
             )
+            #print(embed_tokens.weight)
+            #print(embed_tokens.weight.size())
+            #exit()
 
         if args.tie_adaptive_weights:
             assert args.adaptive_input

@@ -19,6 +19,7 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     level=os.environ.get("LOGLEVEL", "INFO").upper(),
+    #level=os.environ.get("LOGLEVEL", "CRITICAL").upper(),
     stream=sys.stdout,
 )
 logger = logging.getLogger("fairseq_cli.train")
@@ -207,6 +208,7 @@ def main(cfg: FairseqConfig) -> None:
             break
 
         # only use first validation loss to update the learning rate
+        # (LR unchanged! Only sets lr_scheduler.best = val and LR set the same)
         lr = trainer.lr_step(epoch_itr.epoch, valid_losses[0])
 
         epoch_itr = trainer.get_train_iterator(
@@ -320,14 +322,57 @@ def train(
 
     trainer.begin_epoch(epoch_itr.epoch)
 
+    def print_dict(task):
+        with open('/Users/stratos/work/repositories/lm/data/debug/vocab.txt', 'w') as f:
+            for i in range(len(task.dictionary)):
+                print(f'{i}:{task.dictionary.symbols[i]}', end=' ')
+                f.write(f'{i}\t{task.dictionary.symbols[i]}\n')
+        print(f'\n{len(task.dictionary)} items')
+    #print_dict(task)
+    #exit()
+
+    def verbalize_samples(samples):
+        print('-' * 80)
+        print(f'len(samples)={len(samples)}')
+        print(f'samples[0].keys()={samples[0].keys()}')
+        print(f'samples[0][id]={samples[0]["id"].tolist()}')
+        print(f'samples[0][ntokens]={samples[0]["ntokens"]}')
+        print(f'samples[0][net_input][src_lengths]=',samples[0]['net_input']['src_lengths'])
+        print(f'samples[0][net_input][src_tokens]')
+        #print(task.dictionary.string(samples[0]['net_input']['src_tokens']))   # Not relying on this just in case
+        [B, T] = list(samples[0]['net_input']['src_tokens'].size())
+        for i in range(B):
+            for t in range(T):
+                s = task.dictionary[samples[0]['net_input']['src_tokens'][i, t].item()]
+                print(s, end=' ')
+            print()
+        print(samples[0]['net_input']['src_tokens'])
+
+        print()
+        print(f'samples[0][target]')
+        #print(task.dictionary.string(samples[0]['target']))
+        [B, T] = list(samples[0]['target'].size())
+        for i in range(B):
+            for t in range(T):
+                s = task.dictionary[samples[0]['target'][i, t].item()]
+                print(s, end=' ')
+            print()
+        print(samples[0]['target'])
+
     valid_subsets = cfg.dataset.valid_subset.split(",")
     should_stop = False
     num_updates = trainer.get_num_updates()
     logger.info("Start iterating over samples")
-    for i, samples in enumerate(progress):
+    for i, samples in enumerate(progress):  # i = batch index
+        #print(i + 1, '/', len(progress))
+        #verbalize_samples(samples)
+        #exit()
+
         with metrics.aggregate("train_inner"), torch.autograd.profiler.record_function(
             "train_step-%d" % i
         ):
+            # LR updated here: trainer.set_num_updates -> trainer.lr_step_update
+            # -> trainer.lr_scheduler.step_update
             log_output = trainer.train_step(samples)
 
         if log_output is not None:  # not OOM, overflow, ...
@@ -342,6 +387,7 @@ def train(
                 metrics.reset_meters("train_inner")
 
         end_of_epoch = not itr.has_next()
+
         valid_losses, should_stop = validate_and_save(
             cfg, trainer, task, epoch_itr, valid_subsets, end_of_epoch
         )

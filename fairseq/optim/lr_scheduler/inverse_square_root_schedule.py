@@ -55,15 +55,24 @@ class InverseSquareRootSchedule(FairseqLRScheduler):
                 "Cannot use a fixed learning rate schedule with inverse_sqrt."
                 " Consider --lr-scheduler=fixed instead."
             )
-        warmup_end_lr = cfg.lr[0] if isinstance(cfg.lr, Collection) else cfg.lr
+        # Toy example
+        # print(cfg.warmup_updates)  # 100
+        # print(cfg.warmup_init_lr)  # 1e-07, default -1
+        # print(cfg.lr)  # [0.0005]
+        warmup_end_lr = cfg.lr[0] if isinstance(cfg.lr, Collection) else cfg.lr  # 0.0005
         if cfg.warmup_init_lr < 0:
             cfg.warmup_init_lr = 0 if cfg.warmup_updates > 0 else warmup_end_lr
 
         # linearly warmup for the first cfg.warmup_updates
-        self.lr_step = (warmup_end_lr - cfg.warmup_init_lr) / cfg.warmup_updates
+        self.lr_step = (warmup_end_lr - cfg.warmup_init_lr) / cfg.warmup_updates  # 4.999000000000001e-06
+        #print((warmup_end_lr - cfg.warmup_init_lr))
+        #print(cfg.warmup_updates)
+        #print((warmup_end_lr - cfg.warmup_init_lr) / cfg.warmup_updates)
+        #exit()
 
         # then, decay prop. to the inverse square root of the update number
-        self.decay_factor = warmup_end_lr * cfg.warmup_updates**0.5
+        self.decay_factor = warmup_end_lr * cfg.warmup_updates**0.5  # 0.005
+
 
         # initial learning rate
         self.lr = cfg.warmup_init_lr
@@ -71,7 +80,7 @@ class InverseSquareRootSchedule(FairseqLRScheduler):
 
     def step(self, epoch, val_loss=None):
         """Update the learning rate at the end of the given epoch."""
-        super().step(epoch, val_loss)
+        super().step(epoch, val_loss)  # Set self.best to val_loss if better
         # we don't change the learning rate at epoch boundaries
         return self.optimizer.get_lr()
 
@@ -81,5 +90,8 @@ class InverseSquareRootSchedule(FairseqLRScheduler):
             self.lr = self.cfg.warmup_init_lr + num_updates * self.lr_step
         else:
             self.lr = self.decay_factor * num_updates**-0.5
+        #print('[-----------------------')
+        #print(num_updates, self.lr)
+        #print('-----------------------]')
         self.optimizer.set_lr(self.lr)
         return self.lr

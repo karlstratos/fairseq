@@ -37,7 +37,7 @@ class FairseqLRScheduler(object):
         """Update the learning rate at the beginning of the given epoch."""
         pass
 
-    def step(self, epoch, val_loss=None):
+    def step(self, epoch, val_loss=None):  # Set self.best to val_loss if better
         """Update the learning rate at the end of the given epoch."""
         if val_loss is not None:
             if self.best is None:

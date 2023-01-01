@@ -1037,6 +1037,7 @@ class Trainer(object):
 
         logging_output = None
         if not overflow or self.cfg.distributed_training.ddp_backend == "slowmo":
+             # This does lr step! So lr is updated every step
             self.set_num_updates(self.get_num_updates() + 1)
 
             if self.cfg.ema.store_ema:
@@ -1275,7 +1276,7 @@ class Trainer(object):
     def set_num_updates(self, num_updates):
         """Set the number of parameters updates."""
         self._num_updates = num_updates
-        self.lr_step_update()
+        self.lr_step_update()  # <------- lr step update here
         if self.quantizer:
             self.quantizer.step_update(self._num_updates)
         metrics.log_scalar("num_updates", self._num_updates, weight=0, priority=200)
