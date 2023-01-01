@@ -23,10 +23,7 @@ one.cs: 156m transformer (d=512, D=2048, L=6, sharing) trained on 2 GPUs without
 ```
 fairseq-train --task language_modeling data-bin/wikitext-103 --save-dir /data/jl2529/fairs eq/wikitext-103/ --arch transformer_lm --share-decoder-input-output-embed --dropout 0.1 --optimizer adam --adam-betas '(0.9, 0.98)' --weight-decay 0.01 --clip-norm 0.0 --lr 0.0005 --lr-scheduler inverse_sqrt --warmup-updates 4000 --warmup-init-lr 1e-07 --tokens-per-sample 512 --sample-break-mode none --max-tokens 2048 --update-freq 16 --max-update 50000 --distributed-world-size 2
 ```
-Same thing with fp16
-```
-fairseq-train --task language_modeling data-bin/wikitext-103 --save-dir /data/jl2529/fairs eq/wikitext-103/ --arch transformer_lm --share-decoder-input-output-embed --dropout 0.1 --optimizer adam --adam-betas '(0.9, 0.98)' --weight-decay 0.01 --clip-norm 0.0 --lr 0.0005 --lr-scheduler inverse_sqrt --warmup-updates 4000 --warmup-init-lr 1e-07 --tokens-per-sample 512 --sample-break-mode none --max-tokens 2048 --update-freq 16 --max-update 50000 --distributed-world-size 2
-```
+I ran the same with `--fp16` and it was like 30 minutes per epoch, so 3 times fater (e.g., < 1 day)
 
 
 Decoding
