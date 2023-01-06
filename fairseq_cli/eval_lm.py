@@ -104,7 +104,62 @@ def eval_lm(
 
     word_stats = dict()
 
-    for sample in batch_iterator:
+    def verbalize_samples(sample):
+        print('-' * 80)
+        print(f'sample.keys()={sample.keys()}')
+        print(f'sample[id]={sample["id"].tolist()}')
+        print(f'sample[ntokens]={sample["ntokens"]}')
+        print(f'sample[net_input][src_lengths]=',sample['net_input']['src_lengths'])
+        print(f'sample[net_input][src_tokens]')
+
+        [B, T] = list(sample['net_input']['src_tokens'].size())
+        for i in range(B):
+            for t in range(T):
+                s = source_dictionary[sample['net_input']['src_tokens'][i, t].item()]
+                print(s, end=' ')
+            print()
+        print(sample['net_input']['src_tokens'])
+
+        print()
+        print(f'sample[target]')
+        [B, T] = list(sample['target'].size())
+        for i in range(B):
+            for t in range(T):
+                s = source_dictionary[sample['target'][i, t].item()]
+                print(s, end=' ')
+            print()
+        print(sample['target'])
+
+    for sample_id, sample in enumerate(batch_iterator):
+        #print(sample)
+        #verbalize_samples(sample)
+        #if sample_id > 3:
+        #    exit()
+
+        # --tokens-per-sample=7 --context-window 3  # => tokens_per_sample=7-3=4
+        #
+        #sample[net_input][src_tokens]
+        #  ,  commonly   referred   to       as      Valkyria Chronicles
+        #  as Valkyria Chronicles  III  outside         Japan          ,
+        #[[   5, 1128,  379,    8,   17,   15,   25],
+        # [  17,   15,   25,   48, 1505,  210,    5]]
+
+        #sample[target]
+        #  <pad> <pad> <pad>      as  Valkyria Chronicles III
+        #  <pad> <pad> <pad> outside     Japan          ,  is
+        #[[   1,    1,    1,   17,   15,   25,   48],
+        # [   1,    1,    1, 1505,  210,    5,   42]]
+
+        # summing logits for
+        # , commonly referred to -> as
+        # , commonly referred to as -> Valkyria
+        # , commonly referred to as Valkyria -> Chronicles
+        # , commonly referred to as Valkyria Chronicles -> III
+        # as Valkyria Chronicles III -> outside
+        # as Valkyria Chronicles III outside -> Japan
+        # as Valkyria Chronicles III outside Japan -> ,
+        # as Valkyria Chronicles III outside Japan , -> is
+
         if "net_input" not in sample:
             continue
 
