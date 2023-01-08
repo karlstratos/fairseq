@@ -131,6 +131,7 @@ def eval_lm(
         print(sample['target'])
 
     for sample_id, sample in enumerate(batch_iterator):
+        #print(sample_id + 1, '/', len(batch_iterator))
         #print(sample)
         #verbalize_samples(sample)
         #if sample_id > 3:

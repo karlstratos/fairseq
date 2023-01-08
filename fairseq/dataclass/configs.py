@@ -108,6 +108,10 @@ class CommonConfig(FairseqDataclass):
             "help": "log progress every N batches (when progress bar is disabled)"
         },
     )
+    no_shuffle: Optional[bool] = field(
+        default=False,
+        metadata={"help": "no data shuffling"},
+    )
     dict_file: Optional[str] = field(
         default=None, metadata={"help": "print dict/vocab here"}
     )
