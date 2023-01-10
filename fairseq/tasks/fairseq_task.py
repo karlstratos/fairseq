@@ -10,6 +10,7 @@ from argparse import Namespace
 from typing import Any, Callable, Dict, List
 
 import torch
+import numpy as np
 from fairseq import metrics, search, tokenizer, utils
 from fairseq.data import Dictionary, FairseqDataset, data_utils, encoders, iterators
 from fairseq.dataclass import FairseqDataclass
@@ -222,6 +223,7 @@ class FairseqTask(object):
         skip_remainder_batch=False,
         grouped_shuffling=False,
         update_epoch_batch_itr=False,
+        no_shuffle=False,
     ):
         """
         Get an iterator that yields batches of data from the given dataset.
@@ -262,6 +264,7 @@ class FairseqTask(object):
                 between sequence lengths among workers for batches sorted by length.
             update_epoch_batch_itr (bool optional): if true then donot use the cached
                 batch iterator for the epoch
+            no_shuffle (bool optional): no data shuffling
 
         Returns:
             ~fairseq.iterators.EpochBatchIterator: a batched iterator over the
@@ -288,6 +291,8 @@ class FairseqTask(object):
             # get indices ordered by example size
             with data_utils.numpy_seed(seed + epoch):
                 indices = dataset.ordered_indices()
+                if no_shuffle:
+                    indices = np.arange(len(dataset))
 
             # filter examples that are too large
             if max_positions is not None:

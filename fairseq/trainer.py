@@ -732,6 +732,7 @@ class Trainer(object):
             skip_remainder_batch=self.cfg.optimization.skip_remainder_batch,
             grouped_shuffling=self.cfg.dataset.grouped_shuffling,
             update_epoch_batch_itr=self.cfg.dataset.update_epoch_batch_itr,
+            no_shuffle=self.cfg.common.no_shuffle,
         )
         self.reset_dummy_batch(batch_iterator.first_batch)
         return batch_iterator
