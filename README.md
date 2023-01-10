@@ -41,6 +41,7 @@ I ran the same with `--fp16` and it was like 30 minutes per epoch, so 3 times fa
 
 Decoding
 ```
+fairseq-eval-lm data-bin/wikitext-103 --path /data/jl2529/fairseq/wikitext-103/checkpoint_best.pt --batch-size 2 --tokens-per-sample 512 --context-window 0 --gen-subset valid
 fairseq-eval-lm data-bin/wikitext-103 --path /data/jl2529/fairseq/wikitext-103/checkpoint_best.pt --batch-size 2 --tokens-per-sample 512 --context-window 400  # test ppl 29.70, 69.1s (3552.90 tokens/s)
 fairseq-eval-lm data-bin/wikitext-103 --path /data/jl2529/fairseq/wikitext-103/checkpoint_best.pt --batch-size 2 --tokens-per-sample 512 --context-window 0  # test ppl 32.01, 18.3s (13402.89 tokens/s)
 fairseq-eval-lm data-bin/wikitext-103 --path /data/jl2529/fairseq/wikitext-103/checkpoint_best.pt --batch-size 2 --tokens-per-sample 512 --context-window 511  # test ppl 29.94, 7436.0s (33.02 tokens/s) > 2 hrs!

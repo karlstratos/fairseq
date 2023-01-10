@@ -131,7 +131,7 @@ def eval_lm(
         print(sample['target'])
 
     for sample_id, sample in enumerate(batch_iterator):
-        #print(sample)
+        #print(sample_id + 1, len(batch_iterator))
         #verbalize_samples(sample)
         #if sample_id > 3:
         #    exit()
@@ -160,30 +160,37 @@ def eval_lm(
         # as Valkyria Chronicles III outside Japan -> ,
         # as Valkyria Chronicles III outside Japan , -> is
 
+        #print(sample['net_input']['src_tokens'].size())   # (B, 512)
+        #print(sample['target'])
+        #exit()
+
         if "net_input" not in sample:
             continue
 
         sample = utils.move_to_cuda(sample, device=device)
 
         gen_timer.start()
-        hypos = scorer.generate(models, sample)
+        hypos = scorer.generate(models, sample)  # This runs the model, log_softmax, strips pads, etc.
         gen_timer.stop(sample["ntokens"])
 
         for i, hypos_i in enumerate(hypos):
             hypo = hypos_i[0]
             sample_id = sample["id"][i]
 
-            tokens = hypo["tokens"]
+            tokens = hypo["tokens"]  # Already length - ctx
             tgt_len = tokens.numel()
-            pos_scores = hypo["positional_scores"].float()
+            pos_scores = hypo["positional_scores"].float()  # (log p(x_t|x_{<t})_t
 
-            if remove_bos_token:
+            #print(tokens.shape)  # (112,)
+            #print(pos_scores.shape)  # (112,)
+
+            if remove_bos_token:  # False
                 assert hypo["tokens"][0].item() == target_dictionary.bos()
                 tokens = tokens[1:]
                 pos_scores = pos_scores[1:]
 
             skipped_toks = 0
-            if bpe_toks is not None:
+            if bpe_toks is not None:  # False
                 for i in range(tgt_len - 1):
                     if tokens[i].item() in bpe_toks:
                         skipped_toks += 1

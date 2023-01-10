@@ -86,8 +86,8 @@ class FairseqDecoder(nn.Module):
             out = self.adaptive_softmax.get_log_prob(net_output[0], target=target)
             return out.exp_() if not log_probs else out
 
-        logits = net_output[0]
-        if log_probs:
+        logits = net_output[0]  # (B, 512, V)
+        if log_probs:  # True
             return utils.log_softmax(logits, dim=-1, onnx_trace=self.onnx_trace)
         else:
             return utils.softmax(logits, dim=-1, onnx_trace=self.onnx_trace)

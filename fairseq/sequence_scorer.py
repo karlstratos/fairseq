@@ -40,7 +40,7 @@ class SequenceScorer(object):
             # assumes decoder_out[0] is the only thing needed (may not be correct for future models!)
             first, rest = dec_out[0], dec_out[1:]
             bsz, tsz, dim = first.shape
-            if bsz * tsz < self.softmax_batch:
+            if bsz * tsz < self.softmax_batch:  # True: 1024 < 9223372036854775807
                 yield dec_out, target, True
             else:
                 flat = first.contiguous().view(1, -1, dim)
@@ -66,19 +66,23 @@ class SequenceScorer(object):
         for model in models:
             model.eval()
             decoder_out = model(**net_input)
+            #print(decoder_out[0].shape)  # (B, 512, V)
+
             attn = decoder_out[1] if len(decoder_out) > 1 else None
             if type(attn) is dict:
                 attn = attn.get("attn", None)
 
             batched = batch_for_softmax(decoder_out, orig_target)
+
             probs, idx = None, 0
             for bd, tgt, is_single in batched:
                 sample["target"] = tgt
                 curr_prob = model.get_normalized_probs(
                     bd, log_probs=len(models) == 1, sample=sample
-                ).data
+                ).data  # (B, 512, V)  <- log_softmax(bd[0], dim=-1)
                 if is_single:
-                    probs = gather_target_probs(curr_prob, orig_target)
+                    # print(orig_target.shape)  # (B, 512)
+                    probs = gather_target_probs(curr_prob, orig_target)  # (B, 512, V)  -> (B, 512, 1)
                 else:
                     if probs is None:
                         probs = curr_prob.new(orig_target.numel())
@@ -91,10 +95,10 @@ class SequenceScorer(object):
                     idx = end
                 sample["target"] = orig_target
 
-            probs = probs.view(sample["target"].shape)
+            probs = probs.view(sample["target"].shape)  # (B, 512)
 
             if avg_probs is None:
-                avg_probs = probs
+                avg_probs = probs  # This, (B, 512)
             else:
                 avg_probs.add_(probs)
             if attn is not None:
@@ -114,10 +118,11 @@ class SequenceScorer(object):
 
         bsz = avg_probs.size(0)
         hypos = []
+        #                [0, 112]
         start_idxs = sample["start_indices"] if "start_indices" in sample else [0] * bsz
         for i in range(bsz):
             # remove padding from ref
-            ref = (
+            ref = (  # 512 -> 112
                 utils.strip_pad(sample["target"][i, start_idxs[i] :], self.pad)
                 if sample["target"] is not None
                 else None
